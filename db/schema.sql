@@ -16,15 +16,12 @@ create table public.responses (
   client_version       text default 'clan-plan-poll/0.1'
 );
 
-alter table public.responses enable row level security;
+-- Insert-only access is enforced via plain grants, not RLS policies.
+-- (RLS policies targeting `anon` — and even `public` — were observed to
+-- reject inserts entirely on a project using Supabase's newer publishable-
+-- key system, despite the policy being correctly registered; grants sidestep
+-- whatever role-matching quirk caused that.) RLS stays disabled.
+alter table public.responses disable row level security;
 
--- Anonymous (public) clients may INSERT only.
-create policy "anon_insert_only"
-  on public.responses
-  for insert
-  to anon
-  with check (true);
-
--- Deliberately no SELECT/UPDATE/DELETE policy for anon or authenticated:
--- with RLS enabled and no permissive policy, those ops return zero rows,
--- not an error — respondents can submit but never read back others' answers.
+revoke all on public.responses from anon, authenticated, public;
+grant insert on public.responses to anon, authenticated, public;
