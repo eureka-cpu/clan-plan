@@ -1,0 +1,20 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Product Direction Poll</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div id="app"></div>
+  <script src="config.js"></script>
+  <script src="main.js"></script>
+  <script>
+    Elm.Main.init({
+      node: document.getElementById("app"),
+      flags: window.__CLAN_PLAN_CONFIG__
+    });
+  </script>
+</body>
+</html>
