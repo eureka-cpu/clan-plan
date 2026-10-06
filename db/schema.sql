@@ -11,6 +11,8 @@ create table public.responses (
   brand_archetype      text,
   ai_centrality        text,
   free_monetization    text,
+  respondent_name      text,
+  product_name         text,
   general_comment      text,
   answer_path          jsonb not null,
   client_version       text default 'clan-plan-poll/0.1'

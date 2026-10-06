@@ -6,8 +6,8 @@ module Survey.View exposing
     , viewSubmitting
     )
 
-import Html exposing (Html, button, div, h1, li, p, text, textarea, ul)
-import Html.Attributes exposing (class, rows, value)
+import Html exposing (Html, button, div, h1, input, li, p, text, textarea, ul)
+import Html.Attributes exposing (class, disabled, placeholder, rows, type_, value)
 import Html.Events exposing (onClick, onInput)
 import Survey.Graph exposing (Choice, QuestionNode)
 import Survey.Types exposing (AnswerStep)
@@ -44,8 +44,13 @@ viewChoiceButton onChoice choice =
 viewReview :
     { orderedHistory : List AnswerStep
     , pitch : Maybe String
+    , productName : String
+    , onProductNameInput : String -> msg
+    , respondentName : String
+    , onRespondentNameInput : String -> msg
     , comment : String
     , onCommentInput : String -> msg
+    , canSubmit : Bool
     , onBack : msg
     , onSubmit : msg
     }
@@ -53,6 +58,14 @@ viewReview :
 viewReview config =
     div [ class "screen" ]
         [ h1 [] [ text "Review your answers" ]
+        , p [] [ text "What would you name this product? (required)" ]
+        , input
+            [ type_ "text"
+            , value config.productName
+            , onInput config.onProductNameInput
+            , placeholder "e.g. Clan, SpacesOS, ..."
+            ]
+            []
         , case config.pitch of
             Just sentence ->
                 p [ class "pitch-sentence" ] [ text sentence ]
@@ -60,11 +73,24 @@ viewReview config =
             Nothing ->
                 text ""
         , ul [ class "answer-path" ] (List.map viewAnswerStep config.orderedHistory)
+        , p [] [ text "Your name (required)" ]
+        , input
+            [ type_ "text"
+            , value config.respondentName
+            , onInput config.onRespondentNameInput
+            , placeholder "So we know whose answer this was"
+            ]
+            []
         , p [] [ text "Anything else you'd like to add? (optional)" ]
         , textarea [ value config.comment, onInput config.onCommentInput, rows 4 ] []
         , div [ class "actions" ]
             [ button [ onClick config.onBack ] [ text "Back" ]
-            , button [ class "primary", onClick config.onSubmit ] [ text "Submit" ]
+            , button
+                [ class "primary"
+                , onClick config.onSubmit
+                , disabled (not config.canSubmit)
+                ]
+                [ text "Submit" ]
             ]
         ]
 

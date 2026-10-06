@@ -17,6 +17,8 @@ type alias Model =
     { phase : Phase
     , history : List AnswerStep -- most-recent-first
     , flat : FlatAnswers
+    , respondentName : String
+    , productName : String
     , comment : String
     , config : Flags
     }
@@ -24,6 +26,8 @@ type alias Model =
 
 type Msg
     = SelectedChoice Choice
+    | UpdatedRespondentName String
+    | UpdatedProductName String
     | UpdatedComment String
     | ClickedBack
     | ClickedSubmit
@@ -47,6 +51,8 @@ init flags =
     ( { phase = Asking Graph.rootNodeId
       , history = []
       , flat = emptyFlatAnswers
+      , respondentName = ""
+      , productName = ""
       , comment = ""
       , config = flags
       }
@@ -91,6 +97,12 @@ update msg model =
                 _ ->
                     ( model, Cmd.none )
 
+        UpdatedRespondentName name ->
+            ( { model | respondentName = name }, Cmd.none )
+
+        UpdatedProductName name ->
+            ( { model | productName = name }, Cmd.none )
+
         UpdatedComment comment ->
             ( { model | comment = comment }, Cmd.none )
 
@@ -107,7 +119,13 @@ update msg model =
 
         ClickedSubmit ->
             ( { model | phase = Submitting }
-            , Api.submit model.config model.flat (List.reverse model.history) model.comment GotSubmitResult
+            , Api.submit model.config
+                model.flat
+                (List.reverse model.history)
+                model.respondentName
+                model.productName
+                model.comment
+                GotSubmitResult
             )
 
         ClickedRestart ->
@@ -115,6 +133,8 @@ update msg model =
                 | phase = Asking Graph.rootNodeId
                 , history = []
                 , flat = emptyFlatAnswers
+                , respondentName = ""
+                , productName = ""
                 , comment = ""
               }
             , Cmd.none
@@ -203,9 +223,16 @@ view model =
             Review ->
                 View.viewReview
                     { orderedHistory = List.reverse model.history
-                    , pitch = Pitch.generate model.flat
+                    , pitch = Pitch.generate model.productName model.flat
+                    , productName = model.productName
+                    , onProductNameInput = UpdatedProductName
+                    , respondentName = model.respondentName
+                    , onRespondentNameInput = UpdatedRespondentName
                     , comment = model.comment
                     , onCommentInput = UpdatedComment
+                    , canSubmit =
+                        not (String.isEmpty (String.trim model.respondentName))
+                            && not (String.isEmpty (String.trim model.productName))
                     , onBack = ClickedBack
                     , onSubmit = ClickedSubmit
                     }

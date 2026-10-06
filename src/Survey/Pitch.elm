@@ -3,27 +3,37 @@ module Survey.Pitch exposing (generate)
 import Survey.Types exposing (FlatAnswers)
 
 
-{-| Builds the "This product is a [brand feel] [description] for [buyer]
+{-| Builds the "[Product] is a [brand feel] [description] for [buyer]
 that is [reason] at a [price point]." sentence from the respondent's answers.
-Returns Nothing until every piece it needs has been answered — in practice
-that's always true by the time the Review screen is reached, since both
-branches set all four fields before they terminate.
+`productName` is whatever the respondent has typed so far (falls back to
+"This product" when blank, so the sentence stays readable before they fill
+it in). Returns Nothing until every other piece it needs has been answered —
+in practice that's always true by the time the Review screen is reached,
+since both branches set all four fields before they terminate.
 -}
-generate : FlatAnswers -> Maybe String
-generate flat =
-    Maybe.map4 buildSentence flat.subTarget flat.whyPay flat.pricingOrOwnership flat.brandArchetype
+generate : String -> FlatAnswers -> Maybe String
+generate productName flat =
+    Maybe.map4 (buildSentence productName) flat.subTarget flat.whyPay flat.pricingOrOwnership flat.brandArchetype
 
 
-buildSentence : String -> String -> String -> String -> String
-buildSentence subTarget whyPay pricing brand =
+buildSentence : String -> String -> String -> String -> String -> String
+buildSentence productName subTarget whyPay pricing brand =
     let
+        name =
+            if String.isEmpty (String.trim productName) then
+                "This product"
+
+            else
+                String.trim productName
+
         ( brandArticle, brandPhrase ) =
             brandInfo brand
 
         ( priceArticle, pricePhrase ) =
             priceInfo pricing
     in
-    "This product is "
+    name
+        ++ " is "
         ++ brandArticle
         ++ " "
         ++ brandPhrase
